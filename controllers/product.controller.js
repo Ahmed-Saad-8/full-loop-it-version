@@ -75,7 +75,7 @@ export const deleteProduct = async (req, res, next) => {
   try {
     const productId = req.params.id;
 
-    // 1️⃣ Find the product by ID
+    // 1️⃣ Find product
     const product = await Product.findById(productId);
     if (!product) {
       const error = new Error("Product not found");
@@ -83,19 +83,22 @@ export const deleteProduct = async (req, res, next) => {
       throw error;
     }
 
-    // 2️⃣ Check ownership
-    if (product.owner.toString() !== req.user._id.toString()) {
+    // 2️⃣ Allow:
+    //    - The product owner
+    //    - The admin (email: admin@admin.com)
+    const isOwner = product.owner.toString() === req.user._id.toString();
+    const isAdmin = req.user.email === "admin@admin.com";
+
+    if (!isOwner && !isAdmin) {
       const error = new Error("You are not authorized to delete this product");
       error.statusCode = 403;
       throw error;
     }
 
-    // 3️⃣ Delete images from Cloudinary
+    // 3️⃣ Delete Cloudinary images
     const getPublicId = (url) => {
-      // Extract public ID from Cloudinary URL
-      // Example: https://res.cloudinary.com/<cloud_name>/image/upload/v123456/products/abc123.png
       const parts = url.split("/upload/");
-      const pathAndFile = parts[1].split(".")[0]; // remove extension
+      const pathAndFile = parts[1].split(".")[0];
       return pathAndFile;
     };
 
@@ -112,15 +115,14 @@ export const deleteProduct = async (req, res, next) => {
         await cloudinary.uploader.destroy(publicId);
       } catch (err) {
         console.error(`Failed to delete image ${imgUrl} from Cloudinary:`, err);
-        // Continue deleting other images and product
       }
     }
 
-    // 4️⃣ Delete product from MongoDB
+    // 4️⃣ Delete product from DB
     await product.deleteOne();
 
-    // 5️⃣ Send success response
-    res.status(200).json({
+    // 5️⃣ Response
+    return res.status(200).json({
       status: "success",
       message: "Product and images successfully deleted",
     });

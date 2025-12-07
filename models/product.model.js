@@ -45,6 +45,11 @@ const productSchema = new mongoose.Schema(
       enum: ["New", "Used", "Refurbished"], // only these allowed
       required: [true, "Item condition is required"],
     },
+    city: {
+      type: String,
+      enum: ["Alexandria", "Cairo", "Mansoura"], // only these allowed
+      required: [true, "Item condition is required"],
+    },
     mainImage: {
       type: String, // store image URL (for example, from Cloudinary or local path)
       required: [true, "ID image is required"],

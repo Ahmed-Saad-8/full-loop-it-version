@@ -48,7 +48,7 @@ const productSchema = new mongoose.Schema(
     city: {
       type: String,
       enum: ["Alexandria", "Cairo", "Mansoura"], // only these allowed
-      required: [true, "Item condition is required"],
+      required: [true, "City is required"],
     },
     mainImage: {
       type: String, // store image URL (for example, from Cloudinary or local path)
